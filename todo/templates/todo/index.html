@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>To-Do App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-3xl font-bold mb-6 text-center">📝 My To-Do List</h1>
+
+        <form method="POST" class="flex flex-col md:flex-row gap-3 mb-6">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="New task" required
+                   class="flex-1 p-2 border rounded" />
+            <input type="date" name="due_date" class="p-2 border rounded" />
+            <select name="priority" class="p-2 border rounded">
+                <option value="L">Low</option>
+                <option value="M" selected>Medium</option>
+                <option value="H">High</option>
+            </select>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Add
+            </button>
+        </form>
+
+        <ul>
+            {% for task in tasks %}
+            <li class="flex justify-between items-center py-2 border-b">
+                <form action="{% url 'toggle_complete' task.id %}" method="post" class="flex items-center gap-2">
+                    {% csrf_token %}
+                    <input type="checkbox" onchange="this.form.submit()" {% if task.completed %}checked{% endif %} />
+                    <span class="{% if task.completed %}line-through text-gray-400{% endif %}">
+                        {{ task.title }}
+                        {% if task.due_date %}
+                            <small class="text-xs text-gray-500">[Due: {{ task.due_date }}]</small>
+                        {% endif %}
+                        <span class="text-xs px-2 py-0.5 rounded
+                            {% if task.priority == 'H' %}bg-red-100 text-red-600
+                            {% elif task.priority == 'L' %}bg-green-100 text-green-600
+                            {% else %}bg-yellow-100 text-yellow-600{% endif %}">
+                            {{ task.get_priority_display }}
+                        </span>
+                    </span>
+                </form>
+                <a href="{% url 'delete_task' task.id %}" class="text-red-500 hover:text-red-700">🗑️</a>
+            </li>
+            {% empty %}
+            <li class="text-center py-4 text-gray-500">No tasks yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
