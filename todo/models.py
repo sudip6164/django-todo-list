@@ -1,5 +1,8 @@
 from django.db import models
 
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ('L', 'Low'),
@@ -9,7 +12,6 @@ class Task(models.Model):
 
     title = models.CharField(max_length=255)
     completed = models.BooleanField(default=False)
-    due_date = models.DateField(null=True, blank=True)
     due_date = models.DateTimeField(null=True, blank=True)
     description = models.TextField(blank=True)
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default='M')
