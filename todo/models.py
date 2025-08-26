@@ -13,8 +13,12 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     completed = models.BooleanField(default=False)
     due_date = models.DateTimeField(null=True, blank=True)
+
     description = models.TextField(blank=True)
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default='M')
+
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
