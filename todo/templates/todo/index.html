@@ -14,7 +14,7 @@
             {% csrf_token %}
             <input type="text" name="title" placeholder="New task" required
                    class="flex-1 p-2 border rounded" />
-            <input type="date" name="due_date" class="p-2 border rounded" />
+            <input type="datetime-local" name="due_date" class="p-2 border rounded" />
             <select name="priority" class="p-2 border rounded">
                 <option value="L">Low</option>
                 <option value="M" selected>Medium</option>
@@ -43,7 +43,7 @@
                             <div class="text-sm text-gray-500">Category: {{ task.category }}</div>
                         {% endif %}
                         {% if task.due_date %}
-                            <small class="text-xs text-gray-500">[Due: {{ task.due_date|date:"M d, Y" }}]</small>
+                            <small class="text-xs text-gray-500">[Due: {{ task.due_date|date:"M d, Y h:i A" }}]</small>
                         {% endif %}
                         <span class="text-xs px-2 py-0.5 rounded
                             {% if task.priority == 'H' %}bg-red-100 text-red-600

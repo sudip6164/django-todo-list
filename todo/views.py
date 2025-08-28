@@ -1,13 +1,18 @@
 from django.shortcuts import render, redirect
 from .models import Task, Category
+from datetime import datetime
 
 def index(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description', '')
-        due_date = request.POST.get('due_date', None)
         priority = request.POST.get('priority', 'M')
         category_name = request.POST.get('category', '').strip()
+        due_date_str = request.POST.get('due_date', None)
+
+        due_date = None
+        if due_date_str:
+            due_date = datetime.strptime(due_date_str, "%Y-%m-%dT%H:%M")
 
         category = None
         if category_name:  
