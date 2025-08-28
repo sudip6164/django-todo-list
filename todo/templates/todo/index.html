@@ -20,6 +20,12 @@
                 <option value="M" selected>Medium</option>
                 <option value="H">High</option>
             </select>
+            <input
+                type="text"
+                name="category"
+                placeholder="Category (e.g. Work)"
+                class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2"
+            />
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Add
             </button>
@@ -30,11 +36,14 @@
             <li class="flex justify-between items-center py-2 border-b">
                 <form action="{% url 'toggle_complete' task.id %}" method="post" class="flex items-center gap-2">
                     {% csrf_token %}
-                    <input type="checkbox" onchange="this.form.submit()" {% if task.completed %}checked{% endif %} />
+                    <input type="checkbox" onchange="this.form.submit()" {% if task.completed %} checked{% endif %} />
                     <span class="{% if task.completed %}line-through text-gray-400{% endif %}">
                         {{ task.title }}
+                        {% if task.category %}
+                            <div class="text-sm text-gray-500">Category: {{ task.category }}</div>
+                        {% endif %}
                         {% if task.due_date %}
-                            <small class="text-xs text-gray-500">[Due: {{ task.due_date }}]</small>
+                            <small class="text-xs text-gray-500">[Due: {{ task.due_date|date:"M d, Y" }}]</small>
                         {% endif %}
                         <span class="text-xs px-2 py-0.5 rounded
                             {% if task.priority == 'H' %}bg-red-100 text-red-600
