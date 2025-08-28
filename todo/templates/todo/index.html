@@ -26,6 +26,7 @@
                 placeholder="Category (e.g. Work)"
                 class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2"
             />
+            <textarea name="description" placeholder="Enter description" class="border p-2 rounded w-full"></textarea>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Add
             </button>
@@ -42,6 +43,7 @@
                         {% if task.category %}
                             <div class="text-sm text-gray-500">Category: {{ task.category }}</div>
                         {% endif %}
+                        <p class="text-gray-600 text-sm">{{ task.description }}</p>
                         {% if task.due_date %}
                             <small class="text-xs text-gray-500">[Due: {{ task.due_date|date:"M d, Y h:i A" }}]</small>
                         {% endif %}

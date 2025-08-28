@@ -19,7 +19,7 @@ def index(request):
             category, _ = Category.objects.get_or_create(name=category_name)
 
         if title:
-            Task.objects.create(title=title, due_date=due_date, priority=priority, category=category)
+            Task.objects.create(title=title, due_date=due_date, priority=priority, description=description, category=category)
         return redirect('index')
 
     tasks = Task.objects.all().order_by('completed', 'due_date')
