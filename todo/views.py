@@ -9,6 +9,21 @@ def index(request):
     query = request.GET.get('q', '').strip()
     if query:
         tasks_qs = tasks_qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
+
+    # Filters
+    priority = request.GET.get('priority', '')
+    if priority in ['L', 'M', 'H']:
+        tasks_qs = tasks_qs.filter(priority=priority)
+
+    category_name = request.GET.get('category', '').strip()
+    if category_name:
+        tasks_qs = tasks_qs.filter(category__name__iexact=category_name)
+
+    completed = request.GET.get('completed', '')
+    if completed == 'true':
+        tasks_qs = tasks_qs.filter(completed=True)
+    elif completed == 'false':
+        tasks_qs = tasks_qs.filter(completed=False)
     # page size handling: allow 5, 10, 20, or custom (positive int)
     raw_page_size = request.GET.get('page_size', '10')
     try:
@@ -25,6 +40,9 @@ def index(request):
         'page_obj': page_obj,
         'page_size': page_size,
         'q': query,
+        'priority': priority,
+        'category_value': category_name,
+        'completed_value': completed,
     }
     return render(request, 'todo/index.html', context)
 

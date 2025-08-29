@@ -15,6 +15,18 @@
                             </svg>
                         </button>
                     </div>
+                    <select name="priority" class="px-2 py-2 border rounded">
+                        <option value="">Priority</option>
+                        <option value="L" {% if priority == 'L' %}selected{% endif %}>Low</option>
+                        <option value="M" {% if priority == 'M' %}selected{% endif %}>Medium</option>
+                        <option value="H" {% if priority == 'H' %}selected{% endif %}>High</option>
+                    </select>
+                    <input type="text" name="category" value="{{ category_value }}" placeholder="Category" class="px-3 py-2 border rounded w-40" />
+                    <select name="completed" class="px-2 py-2 border rounded">
+                        <option value="">Status</option>
+                        <option value="false" {% if completed_value == 'false' %}selected{% endif %}>Active</option>
+                        <option value="true" {% if completed_value == 'true' %}selected{% endif %}>Completed</option>
+                    </select>
                     <label class="text-sm text-gray-600">Per page</label>
                     <select name="page_size" class="px-2 py-1 border rounded">
                         <option value="5" {% if page_size == 5 %}selected{% endif %}>5</option>
@@ -85,11 +97,11 @@
         {% if page_obj.paginator.num_pages > 1 %}
         <div class="flex items-center justify-center gap-2 mt-6">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&q={{ q }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Previous</a>
+            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&q={{ q }}&priority={{ priority }}&category={{ category_value }}&completed={{ completed_value }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Previous</a>
             {% endif %}
             <span class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&q={{ q }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Next</a>
+            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&q={{ q }}&priority={{ priority }}&category={{ category_value }}&completed={{ completed_value }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Next</a>
             {% endif %}
         </div>
         {% endif %}
