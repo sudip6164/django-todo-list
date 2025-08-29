@@ -1,0 +1,39 @@
+{% extends 'todo/base.html' %}
+{% block title %}Edit Task{% endblock %}
+{% block content %}
+            <h1 class="text-3xl font-bold mb-6 text-gray-800">Edit Task</h1>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <input type="text" name="title" value="{{ task.title }}" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
+                    <input type="datetime-local" name="due_date" value="{{ task.due_date|date:'Y-m-d\TH:i' }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <select name="priority"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700">
+                        <option value="L" {% if task.priority == 'L' %}selected{% endif %}>Low Priority</option>
+                        <option value="M" {% if task.priority == 'M' %}selected{% endif %}>Medium Priority</option>
+                        <option value="H" {% if task.priority == 'H' %}selected{% endif %}>High Priority</option>
+                    </select>
+                    <input type="text" name="category" value="{% if task.category %}{{ task.category.name }}{% endif %}"
+                           placeholder="Category (e.g. Work, Personal)"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
+                </div>
+
+                <textarea name="description" placeholder="Enter task description..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700">{{ task.description }}</textarea>
+
+                <div class="flex gap-2">
+                    <a href="{% url 'index' %}" class="px-4 py-3 rounded-lg border hover:bg-gray-50">Cancel</a>
+                    <button type="submit"
+                            class="px-4 py-3 rounded-lg bg-blue-600 text-white font-semibold transition-all duration-300 hover:bg-blue-700 hover:scale-[1.02]">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+{% endblock %}
+
