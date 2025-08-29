@@ -5,10 +5,19 @@ from datetime import datetime
 
 def index(request):
     tasks_qs = Task.objects.all().order_by('completed', 'due_date')
-    paginator = Paginator(tasks_qs, 10)
+    # page size handling: allow 5, 10, 20, or custom (positive int)
+    raw_page_size = request.GET.get('page_size', '10')
+    try:
+        page_size = int(raw_page_size)
+        if page_size <= 0:
+            page_size = 10
+    except (TypeError, ValueError):
+        page_size = 10
+
+    paginator = Paginator(tasks_qs, page_size)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'todo/index.html', {'page_obj': page_obj})
+    return render(request, 'todo/index.html', {'page_obj': page_obj, 'page_size': page_size})
 
 def add_task(request):
     if request.method == 'POST':
