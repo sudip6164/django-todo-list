@@ -1,10 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from .models import Task, Category
+from django.db.models import Q
 from datetime import datetime
 
 def index(request):
     tasks_qs = Task.objects.all().order_by('completed', 'due_date')
+    query = request.GET.get('q', '').strip()
+    if query:
+        tasks_qs = tasks_qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
     # page size handling: allow 5, 10, 20, or custom (positive int)
     raw_page_size = request.GET.get('page_size', '10')
     try:
@@ -17,7 +21,12 @@ def index(request):
     paginator = Paginator(tasks_qs, page_size)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'todo/index.html', {'page_obj': page_obj, 'page_size': page_size})
+    context = {
+        'page_obj': page_obj,
+        'page_size': page_size,
+        'q': query,
+    }
+    return render(request, 'todo/index.html', context)
 
 def add_task(request):
     if request.method == 'POST':

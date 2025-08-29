@@ -6,8 +6,8 @@
         <h1 class="text-4xl font-bold mb-8 text-center text-gray-800 tracking-tight">My To-Do List</h1>
         <div class="rounded-lg border border-gray-100 p-4 bg-gradient-to-br from-white to-gray-50">
             <div class="flex items-center justify-between gap-4 flex-wrap">
-                <p class="text-sm text-gray-600">Create new tasks from the Add Task page.</p>
                 <form method="get" class="flex items-center gap-2">
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search tasks..." class="px-3 py-2 border rounded w-64" />
                     <label class="text-sm text-gray-600">Per page</label>
                     <select name="page_size" class="px-2 py-1 border rounded">
                         <option value="5" {% if page_size == 5 %}selected{% endif %}>5</option>
@@ -17,6 +17,7 @@
                     <input type="number" name="page_size" min="1" placeholder="Custom" class="w-24 px-2 py-1 border rounded" />
                     <button class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Apply</button>
                 </form>
+                <p class="text-sm text-gray-600">Use Add Task to create new items.</p>
             </div>
         </div>
 
@@ -77,11 +78,11 @@
         {% if page_obj.paginator.num_pages > 1 %}
         <div class="flex items-center justify-center gap-2 mt-6">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Previous</a>
+            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&q={{ q }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Previous</a>
             {% endif %}
             <span class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Next</a>
+            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&q={{ q }}" class="px-3 py-1.5 rounded-md border hover:bg-gray-50">Next</a>
             {% endif %}
         </div>
         {% endif %}
