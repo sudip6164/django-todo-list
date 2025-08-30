@@ -3,46 +3,51 @@ from django.core.paginator import Paginator
 from .models import Task, Category
 from django.db.models import Q
 from datetime import datetime
+from django.utils import timezone
 
 def index(request):
-    tasks_qs = Task.objects.all().order_by('completed', 'due_date')
+    # Simple task list with basic filtering
+    tasks_qs = Task.objects.all().order_by('-created_at')
+    
+    # Basic search
     query = request.GET.get('q', '').strip()
     if query:
         tasks_qs = tasks_qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
-
-    # Filters
+    
+    # Basic filters
     priority = request.GET.get('priority', '')
     if priority in ['L', 'M', 'H']:
         tasks_qs = tasks_qs.filter(priority=priority)
-
+    
     category_name = request.GET.get('category', '').strip()
     if category_name:
         tasks_qs = tasks_qs.filter(category__name__iexact=category_name)
-
+    
     completed = request.GET.get('completed', '')
     if completed == 'true':
         tasks_qs = tasks_qs.filter(completed=True)
     elif completed == 'false':
         tasks_qs = tasks_qs.filter(completed=False)
-    # page size handling: allow 5, 10, 20, or custom (positive int)
-    raw_page_size = request.GET.get('page_size', '10')
-    try:
-        page_size = int(raw_page_size)
-        if page_size <= 0:
-            page_size = 10
-    except (TypeError, ValueError):
-        page_size = 10
-
-    paginator = Paginator(tasks_qs, page_size)
+    
+    # Simple pagination
+    paginator = Paginator(tasks_qs, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    
+    # Get stats for sidebar
+    total_tasks = Task.objects.count()
+    completed_tasks = Task.objects.filter(completed=True).count()
+    
     context = {
+        'tasks': page_obj,
         'page_obj': page_obj,
-        'page_size': page_size,
         'q': query,
         'priority': priority,
         'category_value': category_name,
         'completed_value': completed,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'now': timezone.now(),
     }
     return render(request, 'todo/index.html', context)
 
@@ -102,7 +107,8 @@ def edit_task(request, task_id):
     return render(request, 'todo/edit.html', {'task': task})
 
 def delete_task(request, task_id):
-    Task.objects.filter(id=task_id).delete()
+    task = Task.objects.get(id=task_id)
+    task.delete()
     return redirect('index')
 
 def toggle_complete(request, task_id):

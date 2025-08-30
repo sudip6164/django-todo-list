@@ -8,40 +8,42 @@
 <body class="min-h-screen p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[260px,1fr] gap-6">
         <!-- Sidebar -->
-        <aside class="md:sticky md:top-6 h-max bg-gradient-to-b from-blue-600 to-indigo-600 text-white rounded-2xl shadow-xl p-4">
-            <div class="flex items-center justify-between mb-4">
-                <span class="font-semibold tracking-wide">To‑Do</span>
-                <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full">v1</span>
+        <aside class="md:sticky md:top-6 h-max bg-gradient-to-b from-blue-600 to-indigo-600 text-white rounded-2xl shadow-xl p-6">
+            <!-- Logo/Brand -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold tracking-wide">To‑Do</h1>
+                <p class="text-blue-100 text-sm mt-1">Organize your life</p>
             </div>
-            <nav class="space-y-1" aria-label="Primary">
-                <a href="{% url 'index' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg {% block nav_home_active %}bg-white/10{% endblock %} hover:bg-white/20 transition-all duration-300 group">
-                    <span class="inline-grid place-items-center h-6 w-6 rounded-md bg-white text-blue-600 group-hover:scale-110 transition">🏠</span>
-                    <span>Home</span>
+            
+            <!-- Navigation -->
+            <nav class="space-y-3" aria-label="Primary">
+                <a href="{% url 'index' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% block nav_home_active %}bg-white/10{% endblock %} hover:bg-white/20 transition-all duration-300 group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                    </svg>
+                    <span class="font-medium">Dashboard</span>
                 </a>
-                <a href="{% url 'add_task' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg {% block nav_add_active %}{% endblock %} hover:bg-white/10 transition-all duration-300 group">
-                    <span class="inline-grid place-items-center h-6 w-6 rounded-md bg-white text-indigo-600 group-hover:scale-110 transition">+</span>
-                    <span>Add Task</span>
+                
+                <a href="{% url 'add_task' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% block nav_add_active %}{% endblock %} hover:bg-white/20 transition-all duration-300 group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span class="font-medium">Add Task</span>
                 </a>
-                <a href="#search-filter" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 group">
-                    <span class="inline-grid place-items-center h-6 w-6 rounded-md bg-white text-indigo-600 group-hover:scale-110 transition">🔍</span>
-                    <span>Search / Filter</span>
-                </a>
-                <button type="button" class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 group">
-                    <span class="inline-grid place-items-center h-6 w-6 rounded-md bg-white text-indigo-600 group-hover:scale-110 transition">↕</span>
-                    <span>Sort</span>
-                    <span class="ml-auto text-xs bg-white/20 px-2 py-0.5 rounded-full">soon</span>
-                </button>
-                <button type="button" class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 group" aria-label="Toggle theme">
-                    <span class="inline-grid place-items-center h-6 w-6 rounded-md bg-white text-indigo-600 group-hover:scale-110 transition">☾</span>
-                    <span>Theme</span>
-                </button>
             </nav>
-            <div class="mt-6 bg-white/10 rounded-xl p-3 text-sm">
-                <p class="opacity-90">Tasks</p>
-                <div class="mt-2 flex items-center gap-2 text-xs">
-                    <span class="bg-white/20 px-2 py-0.5 rounded-full">All</span>
-                    <span class="bg-white/20 px-2 py-0.5 rounded-full">Today</span>
-                    <span class="bg-white/20 px-2 py-0.5 rounded-full">Flagged</span>
+            
+            <!-- Quick Stats -->
+            <div class="mt-8 pt-6 border-t border-white/20">
+                <h3 class="text-sm font-medium text-blue-100 mb-3">Quick Stats</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-blue-200">Total Tasks</span>
+                        <span class="font-medium">{{ total_tasks|default:0 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-blue-200">Completed</span>
+                        <span class="font-medium text-green-300">{{ completed_tasks|default:0 }}</span>
+                    </div>
                 </div>
             </div>
         </aside>
