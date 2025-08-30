@@ -12,7 +12,7 @@
                 <div class="grid md:grid-cols-2 gap-4">
                     <input type="text" name="title" value="{{ task.title }}" required
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
-                    <input type="datetime-local" name="due_date" value="{{ task.due_date|date:'Y-m-d\TH:i' }}"
+                    <input type="datetime-local" name="due_date" id="due_date" value="{{ task.due_date|date:'Y-m-d\TH:i' }}"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
                 </div>
 
@@ -39,5 +39,26 @@
                     </button>
                 </div>
             </form>
-{% endblock %}
+
+            <script>
+                // Set minimum date and time to current moment
+                function setMinDateTime() {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    
+                    const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    document.getElementById('due_date').min = minDateTime;
+                }
+                
+                // Set min datetime when page loads
+                setMinDateTime();
+                
+                // Update min datetime every minute to stay current
+                setInterval(setMinDateTime, 60000);
+            </script>
+        {% endblock %}
 
