@@ -44,6 +44,14 @@
                         <span class="text-blue-200">Completed</span>
                         <span class="font-medium text-green-300">{{ completed_tasks|default:0 }}</span>
                     </div>
+                    <div class="flex justify-between">
+                        <span class="text-blue-200">Due Today</span>
+                        <span class="font-medium text-yellow-300">{{ today_tasks|default:0 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-blue-200">Overdue</span>
+                        <span class="font-medium text-red-300">{{ overdue_tasks|default:0 }}</span>
+                    </div>
                 </div>
             </div>
         </aside>

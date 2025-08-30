@@ -6,31 +6,45 @@ from datetime import datetime
 from django.utils import timezone
 
 def index(request):
-    # Simple task list with basic filtering
-    tasks_qs = Task.objects.all().order_by('-created_at')
+    # Get all tasks and apply smart ordering
+    tasks_qs = Task.objects.all()
+    
+    # Apply smart ordering: overdue first, then due today, then by due date
+    tasks_qs = sorted(tasks_qs, key=lambda x: (x.get_ordering_value(), x.due_date or timezone.now() + timezone.timedelta(days=365)))
     
     # Basic search
     query = request.GET.get('q', '').strip()
     if query:
-        tasks_qs = tasks_qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        tasks_qs = [task for task in tasks_qs if query.lower() in task.title.lower() or query.lower() in task.description.lower()]
     
     # Basic filters
     priority = request.GET.get('priority', '')
     if priority in ['L', 'M', 'H']:
-        tasks_qs = tasks_qs.filter(priority=priority)
+        tasks_qs = [task for task in tasks_qs if task.priority == priority]
     
     category_name = request.GET.get('category', '').strip()
     if category_name:
-        tasks_qs = tasks_qs.filter(category__name__iexact=category_name)
+        tasks_qs = [task for task in tasks_qs if task.category and task.category.name.lower() == category_name.lower()]
     
     completed = request.GET.get('completed', '')
     if completed == 'true':
-        tasks_qs = tasks_qs.filter(completed=True)
+        tasks_qs = [task for task in tasks_qs if task.completed]
     elif completed == 'false':
-        tasks_qs = tasks_qs.filter(completed=False)
+        tasks_qs = [task for task in tasks_qs if not task.completed]
+    
+    # Today's tasks filter
+    today_filter = request.GET.get('today', '')
+    if today_filter == 'true':
+        tasks_qs = [task for task in tasks_qs if task.is_due_today()]
     
     # Get all categories for the filter dropdown
     categories = Category.objects.all().order_by('name')
+    
+    # Calculate enhanced stats
+    total_tasks = len(tasks_qs)
+    completed_tasks = len([task for task in tasks_qs if task.completed])
+    overdue_tasks = len([task for task in tasks_qs if task.is_overdue()])
+    today_tasks = len([task for task in tasks_qs if task.is_due_today()])
     
     context = {
         'tasks': tasks_qs,
@@ -38,8 +52,11 @@ def index(request):
         'priority': priority,
         'category_value': category_name,
         'completed_value': completed,
+        'today_filter': today_filter,
         'categories': categories,
         'now': timezone.now(),
+        'overdue_tasks': overdue_tasks,
+        'today_tasks': today_tasks,
     }
     return render(request, 'todo/index.html', context)
 
