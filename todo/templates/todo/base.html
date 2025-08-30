@@ -17,9 +17,9 @@
             
             <!-- Navigation -->
             <nav class="space-y-3" aria-label="Primary">
-                <a href="{% url 'index' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% block nav_home_active %}bg-white/10{% endblock %} hover:bg-white/20 transition-all duration-300 group">
+                <a href="{% url 'index' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% block nav_home_active %}{% endblock %} hover:bg-white/20 transition-all duration-300 group">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                     </svg>
                     <span class="font-medium">Dashboard</span>
                 </a>
