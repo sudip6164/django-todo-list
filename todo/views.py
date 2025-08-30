@@ -37,8 +37,11 @@ def index(request):
     if today_filter == 'true':
         tasks_qs = [task for task in tasks_qs if task.is_due_today()]
     
-    # Get all categories for the filter dropdown
-    categories = Category.objects.all().order_by('name')
+    # Get only categories that have tasks (for filters)
+    filter_categories = Category.objects.filter(task__isnull=False).distinct().order_by('name')
+    
+    # Get all categories (for bulk actions)
+    all_categories = Category.objects.all().order_by('name')
     
     # Calculate enhanced stats
     total_tasks = len(tasks_qs)
@@ -53,7 +56,8 @@ def index(request):
         'category_value': category_name,
         'completed_value': completed,
         'today_filter': today_filter,
-        'categories': categories,
+        'categories': filter_categories,
+        'all_categories': all_categories,
         'now': timezone.now(),
         'overdue_tasks': overdue_tasks,
         'today_tasks': today_tasks,
@@ -153,27 +157,33 @@ def toggle_complete(request, task_id):
 
 def bulk_action(request):
     """Handle bulk actions on multiple tasks"""
+    print(f"=== BULK ACTION VIEW CALLED ===")
+    print(f"Request method: {request.method}")
+    print(f"Request POST data: {request.POST}")
+    
     if request.method == 'POST':
         action = request.POST.get('action')
         task_ids = request.POST.getlist('task_ids')
         
+        print(f"Action: {action}")
+        print(f"Task IDs: {task_ids}")
+        
         if action and task_ids:
             tasks = Task.objects.filter(id__in=task_ids)
+            print(f"Found {tasks.count()} tasks to update")
             
             if action == 'complete':
                 tasks.update(completed=True)
+                print(f"Marked {tasks.count()} tasks as complete")
             elif action == 'delete':
+                deleted_count = tasks.count()
                 tasks.delete()
-            elif action == 'move_category':
-                category_name = request.POST.get('category', '').strip()
-                if category_name:
-                    category, _ = Category.objects.get_or_create(name=category_name)
-                    tasks.update(category=category)
-            elif action == 'change_priority':
-                priority = request.POST.get('priority', 'M')
-                if priority in ['L', 'M', 'H']:
-                    tasks.update(priority=priority)
+                print(f"Deleted {deleted_count} tasks")
+        else:
+            print("No action or task_ids provided")
         
+        print("Redirecting to index...")
         return redirect('index')
-    
-    return redirect('index')
+    else:
+        print("Not a POST request, redirecting...")
+        return redirect('index')

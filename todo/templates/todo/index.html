@@ -85,40 +85,34 @@
         <div class="mb-6 p-4 bg-gray-50 rounded-lg border" id="bulk-actions" style="display: none;">
             <form method="POST" action="{% url 'bulk_action' %}" class="flex items-center gap-4 flex-wrap">
                 {% csrf_token %}
+                
+                <!-- Hidden checkboxes for selected tasks -->
+                <div id="hidden-checkboxes" style="display: none;">
+                    <!-- Checkboxes will be added here dynamically -->
+                </div>
+                
                 <div class="flex items-center gap-2">
                     <span class="text-sm font-medium text-gray-700">Selected:</span>
                     <span id="selected-count" class="text-sm text-blue-600 font-medium">0</span>
                 </div>
                 
-                <select name="action" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
-                    <option value="">Choose Action</option>
-                    <option value="complete">Mark Complete</option>
-                    <option value="delete">Delete</option>
-                    <option value="move_category">Move to Category</option>
-                    <option value="change_priority">Change Priority</option>
-                </select>
+                               <select name="action" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                   <option value="">Choose Action</option>
+                   <option value="complete">Mark Complete</option>
+                   <option value="delete">Delete</option>
+               </select>
                 
-                <select name="category" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" style="display: none;">
-                    <option value="">Select Category</option>
-                    {% for category in categories %}
-                        <option value="{{ category.name }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
+                               
                 
-                <select name="priority" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" style="display: none;">
-                    <option value="">Select Priority</option>
-                    <option value="L">Low</option>
-                    <option value="M">Medium</option>
-                    <option value="H">High</option>
-                </select>
-                
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm" onclick="console.log('Submit button clicked!')">
                     Apply Action
                 </button>
                 
                 <button type="button" onclick="clearSelection()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 text-sm">
                     Clear Selection
                 </button>
+                
+
             </form>
         </div>
 
@@ -268,43 +262,102 @@
 
     <script>
         // Bulk Actions JavaScript
+        let actionSelect, categorySelect, prioritySelect;
+        
         function updateBulkActions() {
+            console.log('updateBulkActions called');
             const checkboxes = document.querySelectorAll('.task-checkbox:checked');
             const bulkActionsBar = document.getElementById('bulk-actions');
             const selectedCount = document.getElementById('selected-count');
-            const actionSelect = document.querySelector('select[name="action"]');
-            const categorySelect = document.querySelector('select[name="category"]');
-            const prioritySelect = document.querySelector('select[name="priority"]');
+            
+            console.log('Found checkboxes:', checkboxes.length);
+            console.log('Bulk actions bar:', bulkActionsBar);
+            console.log('Selected count element:', selectedCount);
             
             if (checkboxes.length > 0) {
                 bulkActionsBar.style.display = 'block';
                 selectedCount.textContent = checkboxes.length;
+                console.log('Bulk actions bar shown, count:', checkboxes.length);
             } else {
                 bulkActionsBar.style.display = 'none';
+                console.log('Bulk actions bar hidden');
             }
-            
-            // Show/hide additional fields based on action
-            actionSelect.addEventListener('change', function() {
-                categorySelect.style.display = 'none';
-                prioritySelect.style.display = 'none';
-                
-                if (this.value === 'move_category') {
-                    categorySelect.style.display = 'block';
-                } else if (this.value === 'change_priority') {
-                    prioritySelect.style.display = 'block';
-                }
-            });
+        }
+        
+        function handleActionChange() {
+            console.log('Action changed to:', actionSelect.value);
+            // No additional fields needed for complete/delete actions
         }
         
         function clearSelection() {
+            console.log('clearSelection called');
             const checkboxes = document.querySelectorAll('.task-checkbox');
             checkboxes.forEach(checkbox => checkbox.checked = false);
             updateBulkActions();
         }
         
+
+        
         // Initialize bulk actions
         document.addEventListener('DOMContentLoaded', function() {
-            updateBulkActions();
+            console.log('DOM loaded, initializing bulk actions');
+            
+            actionSelect = document.querySelector('select[name="action"]');
+            
+            console.log('Found action select:', actionSelect);
+            
+            if (actionSelect) {
+                // Add event listener for action change
+                actionSelect.addEventListener('change', handleActionChange);
+                
+                // Add form submission handler
+                const bulkForm = document.querySelector('#bulk-actions form');
+                console.log('Found bulk form:', bulkForm);
+                
+                if (bulkForm) {
+                    console.log('Adding submit event listener to bulk form');
+                    
+                    // Add form submission handler
+                    bulkForm.addEventListener('submit', function(e) {
+                        console.log('=== FORM SUBMISSION START ===');
+                        
+                        // Get checked tasks
+                        const checkedBoxes = document.querySelectorAll('.task-checkbox:checked');
+                        console.log('Checked tasks:', checkedBoxes.length);
+                        
+                        if (checkedBoxes.length === 0) {
+                            alert('Please select at least one task');
+                            e.preventDefault();
+                            return false;
+                        }
+                        
+                        // Add selected checkboxes to the form before submission
+                        const hiddenCheckboxesDiv = document.getElementById('hidden-checkboxes');
+                        hiddenCheckboxesDiv.innerHTML = '';
+                        
+                        checkedBoxes.forEach((checkbox, index) => {
+                            const hiddenCheckbox = document.createElement('input');
+                            hiddenCheckbox.type = 'hidden';
+                            hiddenCheckbox.name = 'task_ids';
+                            hiddenCheckbox.value = checkbox.value;
+                            hiddenCheckboxesDiv.appendChild(hiddenCheckbox);
+                            console.log(`Added hidden checkbox ${index}: name="task_ids", value="${checkbox.value}"`);
+                        });
+                        
+                        console.log('Form ready to submit with action:', actionSelect.value);
+                        console.log('=== FORM SUBMISSION READY ===');
+                    });
+                    
+
+                    
+                } else {
+                    console.error('Bulk form not found!');
+                }
+                
+                updateBulkActions();
+            } else {
+                console.error('Some form elements not found!');
+            }
         });
     </script>
 {% endblock %}
