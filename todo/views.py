@@ -64,9 +64,11 @@ def add_task(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description', '')
+        notes = request.POST.get('notes', '')
         priority = request.POST.get('priority', 'M')
         category_name = request.POST.get('category', '').strip()
         due_date_str = request.POST.get('due_date', None)
+        parent_task_id = request.POST.get('parent_task', '')
 
         due_date = None
         if due_date_str:
@@ -75,6 +77,10 @@ def add_task(request):
         category = None
         if category_name:
             category, _ = Category.objects.get_or_create(name=category_name)
+
+        parent_task = None
+        if parent_task_id:
+            parent_task = Task.objects.filter(id=parent_task_id).first()
 
         if title:
             Task.objects.create(
@@ -82,20 +88,27 @@ def add_task(request):
                 due_date=due_date,
                 priority=priority,
                 description=description,
+                notes=notes,
                 category=category,
+                parent_task=parent_task,
             )
         return redirect('index')
 
-    return render(request, 'todo/add.html')
+    # Get all tasks for parent task selection
+    all_tasks = Task.objects.filter(completed=False).order_by('title')
+    
+    return render(request, 'todo/add.html', {'all_tasks': all_tasks})
 
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description', '')
+        notes = request.POST.get('notes', '')
         priority = request.POST.get('priority', 'M')
         category_name = request.POST.get('category', '').strip()
         due_date_str = request.POST.get('due_date', None)
+        parent_task_id = request.POST.get('parent_task', '')
 
         due_date = None
         if due_date_str:
@@ -105,15 +118,27 @@ def edit_task(request, task_id):
         if category_name:
             category, _ = Category.objects.get_or_create(name=category_name)
 
+        parent_task = None
+        if parent_task_id:
+            parent_task = Task.objects.filter(id=parent_task_id).first()
+
         task.title = title or task.title
         task.description = description
+        task.notes = notes
         task.priority = priority
         task.category = category
         task.due_date = due_date
+        task.parent_task = parent_task
         task.save()
         return redirect('index')
 
-    return render(request, 'todo/edit.html', {'task': task})
+    # Get all tasks for parent task selection (excluding self and completed tasks)
+    all_tasks = Task.objects.filter(completed=False).exclude(id=task_id).order_by('title')
+    
+    return render(request, 'todo/edit.html', {
+        'task': task,
+        'all_tasks': all_tasks
+    })
 
 def delete_task(request, task_id):
     task = Task.objects.get(id=task_id)
@@ -124,4 +149,31 @@ def toggle_complete(request, task_id):
     task = Task.objects.get(id=task_id)
     task.completed = not task.completed
     task.save()
+    return redirect('index')
+
+def bulk_action(request):
+    """Handle bulk actions on multiple tasks"""
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        task_ids = request.POST.getlist('task_ids')
+        
+        if action and task_ids:
+            tasks = Task.objects.filter(id__in=task_ids)
+            
+            if action == 'complete':
+                tasks.update(completed=True)
+            elif action == 'delete':
+                tasks.delete()
+            elif action == 'move_category':
+                category_name = request.POST.get('category', '').strip()
+                if category_name:
+                    category, _ = Category.objects.get_or_create(name=category_name)
+                    tasks.update(category=category)
+            elif action == 'change_priority':
+                priority = request.POST.get('priority', 'M')
+                if priority in ['L', 'M', 'H']:
+                    tasks.update(priority=priority)
+        
+        return redirect('index')
+    
     return redirect('index')

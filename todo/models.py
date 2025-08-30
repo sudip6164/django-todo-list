@@ -18,8 +18,10 @@ class Task(models.Model):
     completed = models.BooleanField(default=False)
     due_date = models.DateTimeField(null=True, blank=True)
     description = models.TextField(blank=True)
+    notes = models.TextField(blank=True, help_text="Additional notes, links, or details")
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default='M')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    parent_task = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subtasks')
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -56,3 +58,19 @@ class Task(models.Model):
             return 1  # Due today tasks second
         else:
             return 2  # Future tasks by due date
+
+    def has_subtasks(self):
+        """Check if task has subtasks"""
+        return self.subtasks.exists()
+
+    def get_subtask_progress(self):
+        """Get completion progress of subtasks"""
+        if not self.has_subtasks():
+            return 0
+        total = self.subtasks.count()
+        completed = self.subtasks.filter(completed=True).count()
+        return (completed / total) * 100 if total > 0 else 0
+
+    def is_subtask(self):
+        """Check if this task is a subtask"""
+        return self.parent_task is not None

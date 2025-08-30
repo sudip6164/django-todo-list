@@ -31,6 +31,18 @@
                 <textarea name="description" placeholder="Enter task description..."
                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700">{{ task.description }}</textarea>
 
+                <textarea name="notes" placeholder="Additional notes, links, or details (optional)..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700">{{ task.notes }}</textarea>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <select name="parent_task" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700">
+                        <option value="">No Parent Task</option>
+                        {% for task_option in all_tasks %}
+                            <option value="{{ task_option.id }}" {% if task.parent_task == task_option %}selected{% endif %}>{{ task_option.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div class="flex gap-2">
                     <a href="{% url 'index' %}" class="px-4 py-3 rounded-lg border hover:bg-gray-50">Cancel</a>
                     <button type="submit"

@@ -81,6 +81,47 @@
             </div>
         {% endif %}
 
+        <!-- Bulk Actions Bar -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg border" id="bulk-actions" style="display: none;">
+            <form method="POST" action="{% url 'bulk_action' %}" class="flex items-center gap-4 flex-wrap">
+                {% csrf_token %}
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Selected:</span>
+                    <span id="selected-count" class="text-sm text-blue-600 font-medium">0</span>
+                </div>
+                
+                <select name="action" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <option value="">Choose Action</option>
+                    <option value="complete">Mark Complete</option>
+                    <option value="delete">Delete</option>
+                    <option value="move_category">Move to Category</option>
+                    <option value="change_priority">Change Priority</option>
+                </select>
+                
+                <select name="category" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" style="display: none;">
+                    <option value="">Select Category</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="priority" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" style="display: none;">
+                    <option value="">Select Priority</option>
+                    <option value="L">Low</option>
+                    <option value="M">Medium</option>
+                    <option value="H">High</option>
+                </select>
+                
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm">
+                    Apply Action
+                </button>
+                
+                <button type="button" onclick="clearSelection()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 text-sm">
+                    Clear Selection
+                </button>
+            </form>
+        </div>
+
         <!-- Task List -->
         <div class="space-y-4">
             {% for task in tasks %}
@@ -89,6 +130,9 @@
                     <!-- Task Info -->
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2">
+                            <!-- Bulk Selection Checkbox -->
+                            <input type="checkbox" name="task_ids" value="{{ task.id }}" class="task-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" onchange="updateBulkActions()">
+                            
                             <!-- Priority Badge -->
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                 {% if task.priority == 'H' %} bg-red-100 text-red-800
@@ -112,6 +156,20 @@
                                 📅 {{ task.due_date|date:"M d, Y" }}
                             </span>
                             {% endif %}
+                            
+                            <!-- Parent Task Indicator -->
+                            {% if task.parent_task %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                📋 Subtask
+                            </span>
+                            {% endif %}
+                            
+                            <!-- Subtask Progress -->
+                            {% if task.has_subtasks %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                📊 {{ task.get_subtask_progress|floatformat:0 }}%
+                            </span>
+                            {% endif %}
                         </div>
                         
                         <!-- Task Title -->
@@ -122,6 +180,36 @@
                         <!-- Description (if exists) -->
                         {% if task.description %}
                         <p class="text-gray-600 mt-2">{{ task.description }}</p>
+                        {% endif %}
+                        
+                        <!-- Notes (if exists) -->
+                        {% if task.notes %}
+                        <div class="mt-2 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-300">
+                            <p class="text-sm text-blue-800"><strong>Notes:</strong> {{ task.notes }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Subtasks (if exists) -->
+                        {% if task.has_subtasks %}
+                        <div class="mt-3">
+                            <details class="group">
+                                <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+                                    📋 Subtasks ({{ task.subtasks.count }}) - {{ task.get_subtask_progress|floatformat:0 }}% Complete
+                                </summary>
+                                <div class="mt-2 space-y-2 pl-4">
+                                    {% for subtask in task.subtasks.all %}
+                                    <div class="flex items-center gap-2 text-sm p-2 bg-gray-50 rounded">
+                                        <span class="{% if subtask.completed %}line-through text-gray-500{% endif %}">
+                                            {{ subtask.title }}
+                                        </span>
+                                        {% if subtask.completed %}
+                                        <span class="text-green-600">✓</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </details>
+                        </div>
                         {% endif %}
                     </div>
                     
@@ -176,20 +264,47 @@
             {% endfor %}
         </div>
 
-        <!-- Pagination -->
-        {% if page_obj.paginator.num_pages > 1 %}
-        <div class="flex items-center justify-center gap-2 mt-8">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&priority={{ priority }}&category={{ category_value }}&completed={{ completed_value }}" 
-               class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition">Previous</a>
-            {% endif %}
+
+
+    <script>
+        // Bulk Actions JavaScript
+        function updateBulkActions() {
+            const checkboxes = document.querySelectorAll('.task-checkbox:checked');
+            const bulkActionsBar = document.getElementById('bulk-actions');
+            const selectedCount = document.getElementById('selected-count');
+            const actionSelect = document.querySelector('select[name="action"]');
+            const categorySelect = document.querySelector('select[name="category"]');
+            const prioritySelect = document.querySelector('select[name="priority"]');
             
-            <span class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            if (checkboxes.length > 0) {
+                bulkActionsBar.style.display = 'block';
+                selectedCount.textContent = checkboxes.length;
+            } else {
+                bulkActionsBar.style.display = 'none';
+            }
             
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&priority={{ priority }}&category={{ category_value }}&completed={{ completed_value }}" 
-               class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition">Next</a>
-            {% endif %}
-        </div>
-        {% endif %}
+            // Show/hide additional fields based on action
+            actionSelect.addEventListener('change', function() {
+                categorySelect.style.display = 'none';
+                prioritySelect.style.display = 'none';
+                
+                if (this.value === 'move_category') {
+                    categorySelect.style.display = 'block';
+                } else if (this.value === 'change_priority') {
+                    prioritySelect.style.display = 'block';
+                }
+            });
+        }
+        
+        function clearSelection() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            updateBulkActions();
+        }
+        
+        // Initialize bulk actions
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBulkActions();
+        });
+    </script>
 {% endblock %}
