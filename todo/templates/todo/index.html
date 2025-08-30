@@ -25,29 +25,52 @@
             
             <!-- Quick Filters -->
             <div class="flex items-center justify-center gap-4 flex-wrap">
-                <a href="{% url 'index' %}" class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition">All</a>
-                <a href="?completed=false" class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition">Active</a>
-                <a href="?completed=true" class="px-4 py-2 rounded-lg border hover:bg-gray-50 transition">Completed</a>
                 <a href="{% url 'add_task' %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">+ Add Task</a>
             </div>
         </div>
 
+        <!-- Advanced Filters -->
+        <form method="get" class="flex items-center justify-center gap-4 flex-wrap mb-6">
+            <select name="priority" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">All Priorities</option>
+                <option value="L" {% if priority == 'L' %}selected{% endif %}>Low Priority</option>
+                <option value="M" {% if priority == 'M' %}selected{% endif %}>Medium Priority</option>
+                <option value="H" {% if priority == 'H' %}selected{% endif %}>High Priority</option>
+            </select>
+
+            <select name="category" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.name }}" {% if category_value == category.name %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="completed" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">All Status</option>
+                <option value="false" {% if completed_value == 'false' %}selected{% endif %}>Active</option>
+                <option value="true" {% if completed_value == 'true' %}selected{% endif %}>Completed</option>
+            </select>
+
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 hover:scale-105">
+                Apply Filters
+            </button>
+        </form>
+
         <!-- Status Banner -->
-        {% if completed_value %}
-            <div class="mb-6 p-4 rounded-lg border-l-4 {% if completed_value == 'true' %}border-green-500 bg-green-50 text-green-800{% else %}border-blue-500 bg-blue-50 text-blue-800{% endif %}">
+        {% if completed_value or priority or category_value %}
+            <div class="mb-6 p-4 rounded-lg border-l-4 border-blue-500 bg-blue-50 text-blue-800">
                 <div class="flex items-center gap-3">
-                    {% if completed_value == 'true' %}
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span class="font-medium">Viewing Completed Tasks</span>
-                    {% else %}
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span class="font-medium">Viewing Active Tasks</span>
-                    {% endif %}
-                    <a href="{% url 'index' %}" class="ml-auto text-sm underline hover:no-underline">Show All Tasks</a>
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L6.293 13.586A1 1 0 016 12.879V10H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    <span class="font-medium">
+                        {% if completed_value == 'true' %}Viewing Completed Tasks
+                        {% elif completed_value == 'false' %}Viewing Active Tasks
+                        {% else %}Viewing Filtered Tasks{% endif %}
+                        {% if priority %} • {{ priority|title }} Priority{% endif %}
+                        {% if category_value %} • {{ category_value }} Category{% endif %}
+                    </span>
+                    <a href="{% url 'index' %}" class="ml-auto text-sm underline hover:no-underline">Clear All Filters</a>
                 </div>
             </div>
         {% endif %}

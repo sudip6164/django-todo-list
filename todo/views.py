@@ -29,18 +29,16 @@ def index(request):
     elif completed == 'false':
         tasks_qs = tasks_qs.filter(completed=False)
     
-    # Simple pagination
-    paginator = Paginator(tasks_qs, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # Get all categories for the filter dropdown
+    categories = Category.objects.all().order_by('name')
     
     context = {
-        'tasks': page_obj,
-        'page_obj': page_obj,
+        'tasks': tasks_qs,
         'q': query,
         'priority': priority,
         'category_value': category_name,
         'completed_value': completed,
+        'categories': categories,
         'now': timezone.now(),
     }
     return render(request, 'todo/index.html', context)
