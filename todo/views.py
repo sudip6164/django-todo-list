@@ -34,10 +34,6 @@ def index(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Get stats for sidebar
-    total_tasks = Task.objects.count()
-    completed_tasks = Task.objects.filter(completed=True).count()
-    
     context = {
         'tasks': page_obj,
         'page_obj': page_obj,
@@ -45,8 +41,6 @@ def index(request):
         'priority': priority,
         'category_value': category_name,
         'completed_value': completed,
-        'total_tasks': total_tasks,
-        'completed_tasks': completed_tasks,
         'now': timezone.now(),
     }
     return render(request, 'todo/index.html', context)
