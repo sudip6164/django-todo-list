@@ -35,14 +35,20 @@ class Task(models.Model):
         """Check if task is overdue"""
         if self.completed or not self.due_date:
             return False
-        return self.due_date < timezone.now()
+        # Make sure due_date is timezone-aware for comparison
+        due_date = self.due_date
+        if due_date.tzinfo is None:
+            due_date = timezone.make_aware(due_date)
+        return due_date < timezone.now()
 
     def is_due_today(self):
-        """Check if task is due today"""
+        """Check if task is due today (but not overdue)"""
         if self.completed or not self.due_date:
             return False
-        today = timezone.now().date()
-        return self.due_date.date() == today
+        now = timezone.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start.replace(hour=23, minute=59, second=59, microsecond=999999)
+        return today_start <= self.due_date <= today_end and not self.is_overdue()
 
     def get_ordering_value(self):
         """Get value for smart ordering: overdue first, then due today, then by due date"""

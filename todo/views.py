@@ -77,6 +77,8 @@ def add_task(request):
         due_date = None
         if due_date_str:
             due_date = datetime.strptime(due_date_str, "%Y-%m-%dT%H:%M")
+            # Make it timezone-aware
+            due_date = timezone.make_aware(due_date)
 
         category = None
         if category_name:
@@ -117,6 +119,8 @@ def edit_task(request, task_id):
         due_date = None
         if due_date_str:
             due_date = datetime.strptime(due_date_str, "%Y-%m-%dT%H:%M")
+            # Make it timezone-aware
+            due_date = timezone.make_aware(due_date)
 
         category = None
         if category_name:
@@ -187,3 +191,5 @@ def bulk_action(request):
     else:
         print("Not a POST request, redirecting...")
         return redirect('index')
+
+
