@@ -53,24 +53,38 @@
             </form>
 
             <script>
-                // Set minimum date and time to current moment
+                // Store the original due date value
+                const originalDueDate = document.getElementById('due_date').value;
+                
+                // Set minimum date and time to current moment, but only if due date is being changed
                 function setMinDateTime() {
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const month = String(now.getMonth() + 1).padStart(2, '0');
-                    const day = String(now.getDate()).padStart(2, '0');
-                    const hours = String(now.getHours()).padStart(2, '0');
-                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const dueDateInput = document.getElementById('due_date');
+                    const currentValue = dueDateInput.value;
                     
-                    const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-                    document.getElementById('due_date').min = minDateTime;
+                    // Only set min if the user is actually changing the due date
+                    if (currentValue !== originalDueDate) {
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0');
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        
+                        const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                        dueDateInput.min = minDateTime;
+                    }
                 }
                 
-                // Set min datetime when page loads
-                setMinDateTime();
+                // Add event listener to due date input
+                document.getElementById('due_date').addEventListener('change', function() {
+                    const currentValue = this.value;
+                    if (currentValue !== originalDueDate) {
+                        setMinDateTime();
+                    }
+                });
                 
-                // Update min datetime every minute to stay current
-                setInterval(setMinDateTime, 60000);
+                // Set min datetime when page loads (only if due date is being changed)
+                setMinDateTime();
             </script>
         {% endblock %}
 

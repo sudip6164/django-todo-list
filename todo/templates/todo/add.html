@@ -62,11 +62,13 @@
                     document.getElementById('due_date').min = minDateTime;
                 }
                 
+                // Add event listener to due date input
+                document.getElementById('due_date').addEventListener('focus', function() {
+                    setMinDateTime();
+                });
+                
                 // Set min datetime when page loads
                 setMinDateTime();
-                
-                // Update min datetime every minute to stay current
-                setInterval(setMinDateTime, 60000);
             </script>
         {% endblock %}
 
